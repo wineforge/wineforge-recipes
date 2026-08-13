@@ -1,0 +1,74 @@
+{
+  "$schema": "../../schema/v1/recipe.schema.json",
+  "schemaVersion": 1,
+  "id": "org.example.orbit-painter",
+  "version": "0.9.0-demo",
+  "name": "Orbit Painter (fictional)",
+  "summary": "A fictional graphics utility demonstrating archive, directory, registry, and verification actions.",
+  "license": {
+    "spdx": "LicenseRef-Example-EULA",
+    "noticeUrl": "https://example.invalid/orbit-painter/eula",
+    "acceptance": "required"
+  },
+  "application": {
+    "executable": "C:\\OrbitPainter\\OrbitPainter.exe",
+    "arguments": ["--safe-mode"]
+  },
+  "variants": [
+    {
+      "platform": "linux",
+      "hostArchitecture": "x86_64",
+      "translation": "native",
+      "engine": {
+        "family": "wine-staging",
+        "version": "10.0"
+      }
+    }
+  ],
+  "runtimeAccess": {
+    "network": "outbound",
+    "folders": ["pictures"]
+  },
+  "sources": [
+    {
+      "id": "portable-archive",
+      "kind": "remote",
+      "url": "https://example.invalid/releases/orbit-painter-0.9.0.zip",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  ],
+  "install": [
+    {
+      "action": "create-directory",
+      "path": "C:\\OrbitPainter"
+    },
+    {
+      "action": "extract-archive",
+      "source": "portable-archive",
+      "destination": "C:\\OrbitPainter",
+      "stripComponents": 1
+    },
+    {
+      "action": "set-registry-value",
+      "hive": "HKCU",
+      "key": "Software\\Example\\OrbitPainter",
+      "name": "FirstRunComplete",
+      "valueType": "dword",
+      "value": 1
+    }
+  ],
+  "verify": [
+    {
+      "check": "file-exists",
+      "path": "C:\\OrbitPainter\\OrbitPainter.exe"
+    },
+    {
+      "check": "registry-value-equals",
+      "hive": "HKCU",
+      "key": "Software\\Example\\OrbitPainter",
+      "name": "FirstRunComplete",
+      "value": 1
+    }
+  ]
+}
+

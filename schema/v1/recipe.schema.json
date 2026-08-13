@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wineforge.example/schema/v1/recipe.schema.json",
+  "title": "Wineforge application recipe v1",
+  "description": "A declarative, non-executable recipe for installing and launching a Windows application.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "version",
+    "name",
+    "summary",
+    "license",
+    "application",
+    "variants",
+    "runtimeAccess",
+    "sources",
+    "install",
+    "verify"
+  ],
+  "properties": {
+    "$schema": { "type": "string", "maxLength": 512 },
+    "schemaVersion": { "const": 1 },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)+$",
+      "maxLength": 160
+    },
+    "version": { "$ref": "#/$defs/nonEmptyString" },
+    "name": { "$ref": "#/$defs/displayString" },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "homepage": { "$ref": "#/$defs/httpsUrl" },
+    "license": { "$ref": "#/$defs/license" },
+    "application": { "$ref": "#/$defs/application" },
+    "variants": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/variant" }
+    },
+    "runtimeAccess": { "$ref": "#/$defs/runtimeAccess" },
+    "sources": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/source" }
+    },
+    "install": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/installStep" }
+    },
+    "verify": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/postcondition" }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "displayString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "httpsUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "windowsPath": {
+      "type": "string",
+      "pattern": "^[A-Za-z]:\\\\[^\u0000]*$",
+      "maxLength": 1024
+    },
+    "recipeRelativePath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_. /-]+$",
+      "maxLength": 512
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spdx", "acceptance"],
+      "properties": {
+        "spdx": { "$ref": "#/$defs/nonEmptyString" },
+        "noticeUrl": { "$ref": "#/$defs/httpsUrl" },
+        "acceptance": { "enum": ["none", "required"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "acceptance": { "const": "required" } } },
+          "then": { "required": ["noticeUrl"] }
+        }
+      ]
+    },
+    "application": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executable", "arguments"],
+      "properties": {
+        "executable": { "$ref": "#/$defs/windowsPath" },
+        "arguments": {
+          "type": "array",
+          "maxItems": 128,
+          "items": { "type": "string", "maxLength": 4096 }
+        },
+        "workingDirectory": { "$ref": "#/$defs/windowsPath" }
+      }
+    },
+    "variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "hostArchitecture", "translation", "engine"],
+      "properties": {
+        "platform": { "enum": ["linux", "macos"] },
+        "hostArchitecture": { "enum": ["x86_64", "aarch64"] },
+        "translation": { "enum": ["native", "rosetta2"] },
+        "engine": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["family", "version"],
+          "properties": {
+            "family": { "$ref": "#/$defs/identifier" },
+            "version": { "$ref": "#/$defs/nonEmptyString" },
+            "features": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/identifier" }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "translation": { "const": "rosetta2" } } },
+          "then": {
+            "properties": {
+              "platform": { "const": "macos" },
+              "hostArchitecture": { "const": "aarch64" }
+            }
+          }
+        }
+      ]
+    },
+    "runtimeAccess": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["network", "folders"],
+      "properties": {
+        "network": { "enum": ["none", "outbound"] },
+        "folders": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["documents", "downloads", "pictures", "music", "videos"]
+          }
+        }
+      }
+    },
+    "source": {
+      "oneOf": [
+        { "$ref": "#/$defs/remoteSource" },
+        { "$ref": "#/$defs/repositorySource" }
+      ]
+    },
+    "remoteSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "url", "sha256"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "kind": { "const": "remote" },
+        "url": { "$ref": "#/$defs/httpsUrl" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "repositorySource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "path", "sha256"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "kind": { "const": "repository" },
+        "path": { "$ref": "#/$defs/recipeRelativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "installStep": {
+      "oneOf": [
+        { "$ref": "#/$defs/runInstaller" },
+        { "$ref": "#/$defs/extractArchive" },
+        { "$ref": "#/$defs/copyFile" },
+        { "$ref": "#/$defs/createDirectory" },
+        { "$ref": "#/$defs/setRegistryValue" },
+        { "$ref": "#/$defs/winetricks" }
+      ]
+    },
+    "runInstaller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "source", "arguments", "successExitCodes"],
+      "properties": {
+        "action": { "const": "run-installer" },
+        "source": { "$ref": "#/$defs/identifier" },
+        "arguments": {
+          "type": "array",
+          "maxItems": 128,
+          "items": { "type": "string", "maxLength": 4096 }
+        },
+        "successExitCodes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 0, "maximum": 65535 }
+        }
+      }
+    },
+    "extractArchive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "source", "destination"],
+      "properties": {
+        "action": { "const": "extract-archive" },
+        "source": { "$ref": "#/$defs/identifier" },
+        "destination": { "$ref": "#/$defs/windowsPath" },
+        "stripComponents": { "type": "integer", "minimum": 0, "maximum": 16 }
+      }
+    },
+    "copyFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "source", "destination"],
+      "properties": {
+        "action": { "const": "copy-file" },
+        "source": { "$ref": "#/$defs/identifier" },
+        "destination": { "$ref": "#/$defs/windowsPath" }
+      }
+    },
+    "createDirectory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "path"],
+      "properties": {
+        "action": { "const": "create-directory" },
+        "path": { "$ref": "#/$defs/windowsPath" }
+      }
+    },
+    "setRegistryValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "hive", "key", "name", "valueType", "value"],
+      "properties": {
+        "action": { "const": "set-registry-value" },
+        "hive": { "enum": ["HKCU", "HKLM"] },
+        "key": {
+          "type": "string",
+          "pattern": "^[^\u0000]+$",
+          "maxLength": 512
+        },
+        "name": { "type": "string", "maxLength": 256 },
+        "valueType": { "enum": ["string", "expand-string", "dword", "qword"] },
+        "value": { "oneOf": [{ "type": "string" }, { "type": "integer", "minimum": 0 }] }
+      }
+    },
+    "winetricks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "verbs"],
+      "properties": {
+        "action": { "const": "winetricks" },
+        "verbs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9._-]+$", "maxLength": 64 }
+        }
+      }
+    },
+    "postcondition": {
+      "oneOf": [
+        { "$ref": "#/$defs/fileExists" },
+        { "$ref": "#/$defs/registryValueEquals" }
+      ]
+    },
+    "fileExists": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check", "path"],
+      "properties": {
+        "check": { "const": "file-exists" },
+        "path": { "$ref": "#/$defs/windowsPath" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "registryValueEquals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check", "hive", "key", "name", "value"],
+      "properties": {
+        "check": { "const": "registry-value-equals" },
+        "hive": { "enum": ["HKCU", "HKLM"] },
+        "key": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "name": { "type": "string", "maxLength": 256 },
+        "value": { "oneOf": [{ "type": "string" }, { "type": "integer", "minimum": 0 }] }
+      }
+    }
+  }
+}
