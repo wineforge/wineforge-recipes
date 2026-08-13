@@ -24,3 +24,4 @@ jobs:
           python scripts/verify_sources.py
           recipes/v1/org.7-zip.7-zip.toml
           recipes/v1/org.notepad-plus-plus.notepad-plus-plus.toml
+          recipes/v1/com.google.chrome.toml

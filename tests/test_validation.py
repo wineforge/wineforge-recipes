@@ -52,6 +52,23 @@ class RecipeValidationTests(unittest.TestCase):
                 self.assertIn(installer["installerType"], {"exe", "msi"})
                 self.assertEqual(64, len(recipe["sources"][0]["sha256"]))
 
+    def test_chocolatey_package_is_pinned_and_translate_only(self) -> None:
+        recipe = VALIDATOR_MODULE.load_document(
+            ROOT / "recipes" / "v1" / "com.google.chrome.toml"
+        )
+        installer = recipe["install"][0]
+        self.assertEqual("chocolatey-package", installer["action"])
+        self.assertEqual("translate", installer["mode"])
+        self.assertEqual(recipe["version"], installer["packageVersion"])
+        self.assertEqual(64, len(recipe["sources"][0]["sha256"]))
+
+    def test_chocolatey_script_mode_is_rejected(self) -> None:
+        recipe = VALIDATOR_MODULE.load_document(
+            ROOT / "recipes" / "v1" / "com.google.chrome.toml"
+        )
+        recipe["install"][0]["mode"] = "sandboxed-script"
+        self.assertTrue(self.errors_for(recipe))
+
     def test_unknown_action_is_rejected(self) -> None:
         recipe = copy.deepcopy(self.recipe)
         recipe["install"][0] = {"action": "shell", "command": "anything"}
