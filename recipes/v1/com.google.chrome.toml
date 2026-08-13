@@ -1,0 +1,57 @@
+schemaVersion = 1
+id = "com.google.chrome"
+version = "151.0.7922.47"
+name = "Google Chrome"
+summary = "A pinned Chocolatey package whose restricted metadata downloads the vendor installer at installation time."
+homepage = "https://www.google.com/chrome/"
+
+[license]
+spdx = "LicenseRef-Google-Chrome-Terms-of-Service"
+noticeUrl = "https://www.google.com/chrome/terms/"
+acceptance = "required"
+
+[application]
+executable = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+arguments = []
+workingDirectory = "C:\\Program Files\\Google\\Chrome\\Application"
+
+[runtimeAccess]
+network = "outbound"
+folders = ["downloads"]
+
+[[variants]]
+platform = "linux"
+hostArchitecture = "x86_64"
+translation = "native"
+
+[variants.engine]
+family = "wine"
+version = ">=10,<11"
+features = ["win64"]
+
+[[variants]]
+platform = "macos"
+hostArchitecture = "aarch64"
+translation = "rosetta2"
+
+[variants.engine]
+family = "winecx"
+version = ">=24,<26"
+features = ["win64"]
+
+[[sources]]
+id = "package"
+kind = "remote"
+url = "https://community.chocolatey.org/api/v2/package/googlechrome/151.0.7922.47"
+sha256 = "8c856ce485b335a29cbf82609cd3f922b3a428f2c424d0473342a806ab753a19"
+
+[[install]]
+action = "chocolatey-package"
+source = "package"
+packageId = "GoogleChrome"
+packageVersion = "151.0.7922.47"
+mode = "translate"
+
+[[verify]]
+check = "file-exists"
+path = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"

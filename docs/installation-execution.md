@@ -42,6 +42,27 @@ Wineforge deliberately models the common safe subset as data:
 | package script verification | typed `[[verify]]` postconditions |
 | arbitrary PowerShell | intentionally unsupported |
 
+## Pinned Chocolatey packages
+
+A `chocolatey-package` step references a verified `.nupkg`, checks the nuspec
+identity against `packageId` and `packageVersion`, and reads
+`tools/chocolateyInstall.ps1` as untrusted data. It accepts one direct
+`Install-ChocolateyPackage @hashtable` invocation whose URL, SHA-256 checksum,
+installer type, silent arguments, and exit codes can be translated without
+evaluating PowerShell. Wineforge then downloads the vendor installer itself and
+passes the resulting typed plan through the ordinary `run-installer` executor.
+
+Translation must fail closed for dynamic URLs, non-SHA-256 checksums, unknown
+PowerShell interpolation, indirect helper invocation, or multiple installer
+calls. Implementations may recognize a documented allowlist of inert argument
+variables, such as a temporary log path, but must never generalize this into a
+PowerShell interpreter. `mode = "translate"` is the only version 1 mode.
+
+The `.nupkg` digest proves which package metadata was reviewed. The nested
+installer digest proves which vendor bytes are executed. A moving vendor URL
+that later serves different bytes therefore causes installation to stop rather
+than silently upgrading the application.
+
 Installer-specific silent switches still have to come from the application's
 publisher. For example, Notepad++ documents case-sensitive `/S`; MSI packages
 usually use arguments such as `/qn` and `/norestart`.

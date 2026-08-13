@@ -8,8 +8,10 @@ applications. It intentionally contains no user-specific or proprietary
 application configuration.
 
 Recipes are data, not programs. Version 1 supports verified downloads and a
-small set of typed installation operations. It deliberately has no arbitrary
-shell, PowerShell, batch-file, or host-path action.
+small set of typed installation operations. A pinned Chocolatey `.nupkg` can
+also be used as declarative input, but package PowerShell is never executed.
+It deliberately has no arbitrary shell, PowerShell, batch-file, or host-path
+action.
 
 ## Validate
 
@@ -44,12 +46,16 @@ The normative definition is [schema/v1/recipe.schema.json](schema/v1/recipe.sche
 Recipes can describe unattended installation through typed `[[install]]`
 steps. A `run-installer` step selects a verified source, declares `exe` or
 `msi`, supplies silent arguments as an array, and lists accepted exit codes.
+The `chocolatey-package` action pins a `.nupkg` and asks Wineforge to translate
+the supported static `Install-ChocolateyPackage` fields into the same native
+installer plan. Both the package and its vendor download are SHA-256 verified.
 TOML itself does not execute anything, and the catalog validator does not run
 installers. The required runtime behavior and comparison with Chocolatey are
 documented in [docs/installation-execution.md](docs/installation-execution.md).
 
-The Notepad++ and 7-Zip recipes are real, pinned fixtures. Their official
-installer bytes are checked by a scheduled and manually dispatchable workflow.
+The Notepad++, 7-Zip, and Google Chrome recipes are real, pinned fixtures. The
+Chrome recipe exercises the download-at-install-time Chocolatey model. Their
+declared source bytes are checked by a scheduled and manually dispatchable workflow.
 This verifies download integrity without running third-party Windows code in
 ordinary pull-request jobs. End-to-end installation belongs in an isolated,
 disposable Wine prefix using the Wineforge runtime.
