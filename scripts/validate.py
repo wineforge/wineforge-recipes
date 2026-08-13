@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import tomllib
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +18,18 @@ SCHEMA_PATH = ROOT / "schema" / "v1" / "recipe.schema.json"
 RECIPES_PATH = ROOT / "recipes" / "v1"
 
 
+def load_document(path: Path) -> Any:
+    if path.suffix == ".toml":
+        with path.open("rb") as stream:
+            return tomllib.load(stream)
+    if path.suffix == ".json":
+        with path.open(encoding="utf-8") as stream:
+            return json.load(stream)
+    raise ValueError(f"unsupported recipe format: {path.suffix}")
+
+
 def load_json(path: Path) -> Any:
+    """Load a machine JSON artifact such as the normative JSON Schema."""
     with path.open(encoding="utf-8") as stream:
         return json.load(stream)
 
@@ -93,7 +105,9 @@ def main() -> int:
         print(f"schema error: {error}", file=sys.stderr)
         return 2
 
-    paths = args.paths or sorted(RECIPES_PATH.glob("*.json"))
+    paths = args.paths or sorted(
+        [*RECIPES_PATH.glob("*.toml"), *RECIPES_PATH.glob("*.json")]
+    )
     if not paths:
         print("no recipe files found", file=sys.stderr)
         return 2
@@ -101,9 +115,9 @@ def main() -> int:
     failed = False
     for path in paths:
         try:
-            document = load_json(path)
+            document = load_document(path)
             errors = validate_document(document, validator)
-        except (OSError, json.JSONDecodeError) as error:
+        except (OSError, ValueError, json.JSONDecodeError, tomllib.TOMLDecodeError) as error:
             errors = [str(error)]
 
         if errors:
@@ -119,4 +133,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

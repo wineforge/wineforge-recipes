@@ -1,0 +1,57 @@
+schemaVersion = 1
+id = "com.example.starlight-notes"
+version = "1.2.0"
+name = "Starlight Notes (fictional)"
+summary = "A fictional offline note-taking application used to demonstrate a minimal recipe."
+homepage = "https://example.invalid/starlight-notes"
+
+[license]
+spdx = "MIT"
+noticeUrl = "https://example.invalid/starlight-notes/license"
+acceptance = "none"
+
+[application]
+executable = "C:\\Program Files\\Starlight Notes\\StarlightNotes.exe"
+arguments = []
+workingDirectory = "C:\\Program Files\\Starlight Notes"
+
+[runtimeAccess]
+network = "none"
+folders = ["documents"]
+
+[[variants]]
+platform = "linux"
+hostArchitecture = "x86_64"
+translation = "native"
+
+[variants.engine]
+family = "wine"
+version = ">=10,<11"
+features = ["win64"]
+
+[[variants]]
+platform = "macos"
+hostArchitecture = "aarch64"
+translation = "rosetta2"
+
+[variants.engine]
+family = "winecx"
+version = ">=25,<26"
+features = ["win64"]
+
+[[sources]]
+id = "installer"
+kind = "remote"
+url = "https://example.invalid/downloads/starlight-notes-1.2.0.exe"
+sha256 = "0000000000000000000000000000000000000000000000000000000000000000"
+
+[[install]]
+action = "run-installer"
+source = "installer"
+installerType = "exe"
+arguments = ["/quiet", "/norestart"]
+successExitCodes = [0, 3010]
+
+[[verify]]
+check = "file-exists"
+path = "C:\\Program Files\\Starlight Notes\\StarlightNotes.exe"

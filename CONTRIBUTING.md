@@ -7,7 +7,9 @@ Contributions must remain declarative, reviewable, and reproducible.
 3. Request only the runtime capabilities the application actually needs.
 4. Include at least one meaningful postcondition.
 5. Run the validator and unit tests documented in the README.
-6. Explain the source and licence of any real-world metadata in the pull
+6. Use TOML for new recipes. JSON Schema is retained only as the normative
+   machine validation format.
+7. Explain the source and licence of any real-world metadata in the pull
    request. Do not submit credentials, licence keys, personal paths, private
    download links, or material you cannot publish.
 
@@ -19,4 +21,3 @@ The action vocabulary should stay small. Proposals for new actions must explain
 why existing typed actions cannot express the operation and what validation,
 rollback, and security boundaries apply. Arbitrary command execution will not
 be added as a convenience feature.
-

@@ -208,10 +208,14 @@
     "runInstaller": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action", "source", "arguments", "successExitCodes"],
+      "required": ["action", "source", "installerType", "arguments", "successExitCodes"],
       "properties": {
         "action": { "const": "run-installer" },
         "source": { "$ref": "#/$defs/identifier" },
+        "installerType": {
+          "enum": ["exe", "msi"],
+          "description": "How an executor invokes the verified source. EXE runs directly; MSI runs through msiexec /i."
+        },
         "arguments": {
           "type": "array",
           "maxItems": 128,

@@ -1,0 +1,57 @@
+schemaVersion = 1
+id = "org.notepad-plus-plus.notepad-plus-plus"
+version = "8.9.6.1"
+name = "Notepad++"
+summary = "A pinned silent installation of the open-source Notepad++ text editor."
+homepage = "https://notepad-plus-plus.org/"
+
+[license]
+spdx = "GPL-3.0-or-later"
+noticeUrl = "https://github.com/notepad-plus-plus/notepad-plus-plus/blob/v8.9.6.1/LICENSE"
+acceptance = "none"
+
+[application]
+executable = "C:\\Program Files\\Notepad++\\notepad++.exe"
+arguments = []
+workingDirectory = "C:\\Program Files\\Notepad++"
+
+[runtimeAccess]
+network = "none"
+folders = ["documents"]
+
+[[variants]]
+platform = "linux"
+hostArchitecture = "x86_64"
+translation = "native"
+
+[variants.engine]
+family = "wine"
+version = ">=10,<11"
+features = ["win64"]
+
+[[variants]]
+platform = "macos"
+hostArchitecture = "aarch64"
+translation = "rosetta2"
+
+[variants.engine]
+family = "winecx"
+version = ">=24,<26"
+features = ["win64"]
+
+[[sources]]
+id = "installer"
+kind = "remote"
+url = "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9.6.1/npp.8.9.6.1.Installer.x64.exe"
+sha256 = "d8414ee7a38dd3a88c1d7479d115f7e2dc142970f995cb6d34e9c6f104b245c7"
+
+[[install]]
+action = "run-installer"
+source = "installer"
+installerType = "exe"
+arguments = ["/S", "/noUpdater"]
+successExitCodes = [0]
+
+[[verify]]
+check = "file-exists"
+path = "C:\\Program Files\\Notepad++\\notepad++.exe"
