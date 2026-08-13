@@ -18,19 +18,56 @@ class RecipeValidationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.validator = VALIDATOR_MODULE.build_validator()
-        cls.recipe = VALIDATOR_MODULE.load_json(
-            ROOT / "recipes" / "v1" / "com.example.starlight-notes.json"
+        cls.recipe = VALIDATOR_MODULE.load_document(
+            ROOT / "recipes" / "v1" / "com.example.starlight-notes.toml"
         )
 
     def errors_for(self, recipe: dict) -> list[str]:
         return VALIDATOR_MODULE.validate_document(recipe, self.validator)
 
     def test_examples_are_valid(self) -> None:
-        for path in sorted((ROOT / "recipes" / "v1").glob("*.json")):
+        paths = sorted((ROOT / "recipes" / "v1").glob("*.toml"))
+        paths += sorted((ROOT / "recipes" / "v1").glob("*.json"))
+        for path in paths:
             with self.subTest(path=path.name):
                 self.assertEqual(
-                    [], self.errors_for(VALIDATOR_MODULE.load_json(path))
+                    [], self.errors_for(VALIDATOR_MODULE.load_document(path))
                 )
+
+    def test_toml_is_the_catalog_format(self) -> None:
+        self.assertTrue(list((ROOT / "recipes" / "v1").glob("*.toml")))
+        self.assertFalse(list((ROOT / "recipes" / "v1").glob("*.json")))
+
+    def test_real_installers_are_typed_and_pinned(self) -> None:
+        for name in [
+            "org.notepad-plus-plus.notepad-plus-plus.toml",
+            "org.7-zip.7-zip.toml",
+        ]:
+            recipe = VALIDATOR_MODULE.load_document(
+                ROOT / "recipes" / "v1" / name
+            )
+            with self.subTest(path=name):
+                installer = recipe["install"][0]
+                self.assertEqual("run-installer", installer["action"])
+                self.assertIn(installer["installerType"], {"exe", "msi"})
+                self.assertEqual(64, len(recipe["sources"][0]["sha256"]))
+
+    def test_chocolatey_package_is_pinned_and_translate_only(self) -> None:
+        recipe = VALIDATOR_MODULE.load_document(
+            ROOT / "recipes" / "v1" / "com.google.chrome.toml"
+        )
+        installer = recipe["install"][0]
+        self.assertEqual("chocolatey-package", installer["action"])
+        self.assertEqual("translate", installer["mode"])
+        self.assertEqual(recipe["version"], installer["packageVersion"])
+        self.assertEqual(64, len(recipe["sources"][0]["sha256"]))
+
+    def test_chocolatey_script_mode_is_rejected(self) -> None:
+        recipe = VALIDATOR_MODULE.load_document(
+            ROOT / "recipes" / "v1" / "com.google.chrome.toml"
+        )
+        recipe["install"][0]["mode"] = "sandboxed-script"
+        self.assertTrue(self.errors_for(recipe))
 
     def test_unknown_action_is_rejected(self) -> None:
         recipe = copy.deepcopy(self.recipe)
@@ -65,4 +102,3 @@ class RecipeValidationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

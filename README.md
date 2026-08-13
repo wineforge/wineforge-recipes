@@ -1,13 +1,17 @@
 # Wineforge Recipes
 
 Wineforge Recipes is the neutral, versioned format for describing reproducible
-Windows application setup under Wineforge. This repository contains the public
-schema and fictional examples; it intentionally contains no user-specific or
-proprietary application configuration.
+Windows application setup under Wineforge. Human-authored recipes are TOML;
+the JSON Schema remains a machine-readable validation artifact. This repository
+contains neutral fictional examples and pinned public recipes for open-source
+applications. It intentionally contains no user-specific or proprietary
+application configuration.
 
 Recipes are data, not programs. Version 1 supports verified downloads and a
-small set of typed installation operations. It deliberately has no arbitrary
-shell, PowerShell, batch-file, or host-path action.
+small set of typed installation operations. A pinned Chocolatey `.nupkg` can
+also be used as declarative input, but package PowerShell is never executed.
+It deliberately has no arbitrary shell, PowerShell, batch-file, or host-path
+action.
 
 ## Validate
 
@@ -37,9 +41,27 @@ test fixtures. CI performs the same checks.
 
 The normative definition is [schema/v1/recipe.schema.json](schema/v1/recipe.schema.json).
 
+## Automatic installation
+
+Recipes can describe unattended installation through typed `[[install]]`
+steps. A `run-installer` step selects a verified source, declares `exe` or
+`msi`, supplies silent arguments as an array, and lists accepted exit codes.
+The `chocolatey-package` action pins a `.nupkg` and asks Wineforge to translate
+the supported static `Install-ChocolateyPackage` fields into the same native
+installer plan. Both the package and its vendor download are SHA-256 verified.
+TOML itself does not execute anything, and the catalog validator does not run
+installers. The required runtime behavior and comparison with Chocolatey are
+documented in [docs/installation-execution.md](docs/installation-execution.md).
+
+The Notepad++, 7-Zip, and Google Chrome recipes are real, pinned fixtures. The
+Chrome recipe exercises the download-at-install-time Chocolatey model. Their
+declared source bytes are checked by a scheduled and manually dispatchable workflow.
+This verifies download integrity without running third-party Windows code in
+ordinary pull-request jobs. End-to-end installation belongs in an isolated,
+disposable Wine prefix using the Wineforge runtime.
+
 ## Repository policy
 
-Only fictional demonstration recipes belong here until a contributor has the
-right to publish all names, URLs, metadata, and installation knowledge in a
-real recipe. Private recipes can use the same schema without being contributed.
-
+Real recipes must reference public publisher material, use verifiable licensing
+metadata, and pin immutable installer bytes. Private recipes can use the same
+schema without being contributed.
