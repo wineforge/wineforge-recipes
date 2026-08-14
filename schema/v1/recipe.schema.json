@@ -78,6 +78,16 @@
       "pattern": "^[A-Za-z]:\\\\[^\u0000]*$",
       "maxLength": 1024
     },
+    "installPath": {
+      "oneOf": [
+        { "$ref": "#/$defs/windowsPath" },
+        {
+          "type": "string",
+          "pattern": "^%APPDATA%\\\\[^\\\\]+(?:\\\\[^\\\\]+)*$",
+          "description": "A path beneath the current private Wine user's roaming application-data directory."
+        }
+      ]
+    },
     "recipeRelativePath": {
       "type": "string",
       "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_. /-]+$",
@@ -272,7 +282,7 @@
       "properties": {
         "action": { "const": "copy-file" },
         "source": { "$ref": "#/$defs/identifier" },
-        "destination": { "$ref": "#/$defs/windowsPath" }
+        "destination": { "$ref": "#/$defs/installPath" }
       }
     },
     "createDirectory": {

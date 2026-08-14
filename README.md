@@ -49,6 +49,8 @@ steps. A `run-installer` step selects a verified source, declares `exe` or
 When a vendor distributes its installer inside a ZIP, `archiveMember` names the
 exact executable to extract from the verified archive; other members are not
 extracted.
+The `copy-file` action can seed a verified application default beneath
+`%APPDATA%` without hard-coding Wine's private Windows username.
 The `chocolatey-package` action pins a `.nupkg` and asks Wineforge to translate
 the supported static `Install-ChocolateyPackage` fields into the same native
 installer plan. Both the package and its vendor download are SHA-256 verified.
