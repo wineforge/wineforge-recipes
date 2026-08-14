@@ -46,6 +46,9 @@ The normative definition is [schema/v1/recipe.schema.json](schema/v1/recipe.sche
 Recipes can describe unattended installation through typed `[[install]]`
 steps. A `run-installer` step selects a verified source, declares `exe` or
 `msi`, supplies silent arguments as an array, and lists accepted exit codes.
+When a vendor distributes its installer inside a ZIP, `archiveMember` names the
+exact executable to extract from the verified archive; other members are not
+extracted.
 The `chocolatey-package` action pins a `.nupkg` and asks Wineforge to translate
 the supported static `Install-ChocolateyPackage` fields into the same native
 installer plan. Both the package and its vendor download are SHA-256 verified.

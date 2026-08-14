@@ -213,6 +213,12 @@
       "properties": {
         "action": { "const": "run-installer" },
         "source": { "$ref": "#/$defs/identifier" },
+        "archiveMember": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Optional exact path of an installer executable inside a verified ZIP source."
+        },
         "installerType": {
           "enum": ["exe", "msi"],
           "description": "How an executor invokes the verified source. EXE runs directly; MSI runs through msiexec /i."
